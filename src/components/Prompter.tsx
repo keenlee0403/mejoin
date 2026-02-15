@@ -21,6 +21,7 @@ export default function Prompter({ song, onBack }: PrompterProps) {
   const speedRef = useRef(speed);
   const requestRef = useRef<number>(0);
   const lastTimeRef = useRef<number>(0);
+  const scrollAccRef = useRef<number>(0); // 像素累加器，解决 iOS 亚像素滚动问题
 
   // 同步 state 到 ref
   useEffect(() => { isPlayingRef.current = isPlaying; }, [isPlaying]);
@@ -31,15 +32,24 @@ export default function Prompter({ song, onBack }: PrompterProps) {
   const animate = useCallback((time: number) => {
     if (!isPlayingRef.current || !containerRef.current) {
       lastTimeRef.current = 0;
+      scrollAccRef.current = 0;
       return; // 停止时不再递归
     }
 
     if (lastTimeRef.current !== 0) {
       const deltaTime = time - lastTimeRef.current;
-      // 基础速度 15px/s + 滑块值 × 25px/s，确保最慢也能看到移动
-      const pixelsPerSecond = 15 + speedRef.current * 25;
-      const pixelsToScroll = (pixelsPerSecond * deltaTime) / 1000;
-      containerRef.current.scrollTop += pixelsToScroll;
+      // 基础速度 10px/s + 滑块值 × 15px/s
+      // 最慢(0.5): 17.5px/s  默认(1.0): 25px/s  最快(3.0): 55px/s
+      const pixelsPerSecond = 10 + speedRef.current * 15;
+
+      // 累加亚像素量，攒够 1 像素才滚动（iOS scrollTop 只接受整数）
+      scrollAccRef.current += (pixelsPerSecond * deltaTime) / 1000;
+
+      if (scrollAccRef.current >= 1) {
+        const px = Math.floor(scrollAccRef.current);
+        containerRef.current.scrollTop += px;
+        scrollAccRef.current -= px;
+      }
 
       // 到底部自动停止（scrollTop > 10 防止还没开始滚动就触发）
       const { scrollTop, clientHeight, scrollHeight } = containerRef.current;
@@ -47,6 +57,7 @@ export default function Prompter({ song, onBack }: PrompterProps) {
         isPlayingRef.current = false;
         setIsPlaying(false);
         lastTimeRef.current = 0;
+        scrollAccRef.current = 0;
         return;
       }
     }
