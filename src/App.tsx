@@ -56,7 +56,8 @@ export default function App() {
     setView('EDITOR');
   };
 
-  const handleEditActive = () => {
+  const handleEditSong = (id: string) => {
+    setActiveSongId(id);
     setView('EDITOR');
   };
 
@@ -106,6 +107,7 @@ export default function App() {
         <SongList
           songs={songs}
           onSelect={handleSelectSong}
+          onEdit={handleEditSong}
           onDelete={handleDeleteSong}
           onCreate={handleCreateNew}
         />
@@ -123,7 +125,7 @@ export default function App() {
         <Prompter
           song={activeSong}
           onBack={() => setView('LIST')}
-          onEdit={handleEditActive}
+          onEdit={() => handleEditSong(activeSong.id)}
         />
       )}
     </div>

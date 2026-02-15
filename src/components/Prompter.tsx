@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Song } from '../types';
-import { Play, Pause, ChevronLeft, Settings2, ChevronDown, Minus, Plus, Turtle, Rabbit } from 'lucide-react';
+import { Play, Pause, ChevronLeft, Settings2, ChevronDown, Minus, Plus, Turtle, Rabbit, Pencil } from 'lucide-react';
 
 interface PrompterProps {
   song: Song;
@@ -8,7 +8,7 @@ interface PrompterProps {
   onEdit: () => void;
 }
 
-export default function Prompter({ song, onBack }: PrompterProps) {
+export default function Prompter({ song, onBack, onEdit }: PrompterProps) {
   // UI 状态
   const [isPlaying, setIsPlaying] = useState(false);
   const [speed, setSpeed] = useState(song.settings?.speed ?? 1.0);
@@ -38,8 +38,8 @@ export default function Prompter({ song, onBack }: PrompterProps) {
 
     if (lastTimeRef.current !== 0) {
       const deltaTime = time - lastTimeRef.current;
-      // 线性插值: 滑块 0.5 → 10px/s，滑块 3.0 → 80px/s
-      const pixelsPerSecond = 10 + (speedRef.current - 0.5) * 28;
+      // 线性插值: 滑块 0.5 → 1px/s，滑块 3.0 → 80px/s
+      const pixelsPerSecond = 1 + (speedRef.current - 0.5) * 31.6;
 
       // 累加亚像素量，攒够 1 像素才滚动（iOS scrollTop 只接受整数）
       scrollAccRef.current += (pixelsPerSecond * deltaTime) / 1000;
@@ -101,6 +101,18 @@ export default function Prompter({ song, onBack }: PrompterProps) {
           className="mt-4 p-3 bg-zinc-800/80 backdrop-blur-md rounded-full text-white hover:bg-zinc-700 border border-white/10 active:scale-90 shadow-lg"
         >
           <ChevronLeft size={24} strokeWidth={2.5} />
+        </button>
+      </div>
+
+      {/* 编辑按钮 */}
+      <div
+        className={`fixed top-0 right-0 z-30 pt-safe-top pr-4 transition-all duration-300 ${showControls ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-full pointer-events-none'}`}
+      >
+        <button
+          onClick={(e) => { e.stopPropagation(); onEdit(); }}
+          className="mt-4 p-3 bg-zinc-800/80 backdrop-blur-md rounded-full text-white hover:bg-zinc-700 border border-white/10 active:scale-90 shadow-lg"
+        >
+          <Pencil size={20} strokeWidth={2.5} />
         </button>
       </div>
 
