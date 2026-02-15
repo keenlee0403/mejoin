@@ -11,7 +11,7 @@ interface PrompterProps {
 export default function Prompter({ song, onBack }: PrompterProps) {
   // UI 状态
   const [isPlaying, setIsPlaying] = useState(false);
-  const [speed, setSpeed] = useState(song.settings?.speed || 1.0);
+  const [speed, setSpeed] = useState(song.settings?.speed ?? 1.0);
   const [fontSize, setFontSize] = useState(song.settings?.fontSize || 48);
   const [showControls, setShowControls] = useState(true);
 
@@ -36,8 +36,9 @@ export default function Prompter({ song, onBack }: PrompterProps) {
 
     if (lastTimeRef.current !== 0) {
       const deltaTime = time - lastTimeRef.current;
-      // 速度乘数: 1.0 = 每秒滚动 60 像素
-      const pixelsToScroll = (speedRef.current * 60 * deltaTime) / 1000;
+      // 基础速度 15px/s + 滑块值 × 25px/s，确保最慢也能看到移动
+      const pixelsPerSecond = 15 + speedRef.current * 25;
+      const pixelsToScroll = (pixelsPerSecond * deltaTime) / 1000;
       containerRef.current.scrollTop += pixelsToScroll;
 
       // 到底部自动停止（scrollTop > 10 防止还没开始滚动就触发）
@@ -171,12 +172,12 @@ export default function Prompter({ song, onBack }: PrompterProps) {
                 <div className="flex-1 h-8 flex items-center relative" style={{ touchAction: 'none' }}>
                   <input
                     type="range"
-                    min="0.2"
-                    max="5"
+                    min="0.5"
+                    max="3"
                     step="0.1"
                     value={speed}
                     onChange={(e) => setSpeed(parseFloat(e.target.value))}
-                    style={getSliderStyle(speed, 0.2, 5, '#007AFF')}
+                    style={getSliderStyle(speed, 0.5, 3, '#007AFF')}
                     className="w-full h-2 rounded-full appearance-none cursor-pointer outline-none
                                 [&::-webkit-slider-thumb]:appearance-none 
                                 [&::-webkit-slider-thumb]:w-8 
