@@ -38,9 +38,8 @@ export default function Prompter({ song, onBack }: PrompterProps) {
 
     if (lastTimeRef.current !== 0) {
       const deltaTime = time - lastTimeRef.current;
-      // 基础速度 10px/s + 滑块值 × 15px/s
-      // 最慢(0.5): 17.5px/s  默认(1.0): 25px/s  最快(3.0): 55px/s
-      const pixelsPerSecond = 10 + speedRef.current * 15;
+      // 线性插值: 滑块 0.5 → 10px/s，滑块 3.0 → 80px/s
+      const pixelsPerSecond = 10 + (speedRef.current - 0.5) * 28;
 
       // 累加亚像素量，攒够 1 像素才滚动（iOS scrollTop 只接受整数）
       scrollAccRef.current += (pixelsPerSecond * deltaTime) / 1000;
