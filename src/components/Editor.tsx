@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Song } from '../types';
-import { UploadCloud, ChevronLeft } from 'lucide-react';
+import { UploadCloud, ChevronLeft, Turtle, Rabbit } from 'lucide-react';
 
 interface EditorProps {
   song?: Song;
@@ -12,6 +12,7 @@ export default function Editor({ song, onSave, onCancel }: EditorProps) {
   const [title, setTitle] = useState(song?.title || '');
   const [artist, setArtist] = useState(song?.artist || '');
   const [lyrics, setLyrics] = useState(song?.lyrics || '');
+  const [speed, setSpeed] = useState(song?.settings?.speed ?? 1.0);
 
   const handleSave = () => {
     if (!title.trim()) {
@@ -25,7 +26,7 @@ export default function Editor({ song, onSave, onCancel }: EditorProps) {
       artist,
       lyrics,
       createdAt: song?.createdAt || Date.now(),
-      settings: song?.settings || { speed: 1.0, fontSize: 48 }
+      settings: { speed, fontSize: song?.settings?.fontSize || 48 }
     };
 
     onSave(newSong);
@@ -46,49 +47,46 @@ export default function Editor({ song, onSave, onCancel }: EditorProps) {
     reader.readAsText(file);
   };
 
+  // 与 Prompter 中完全一致的速度公式
+  const displaySpeed = Math.round(1 + (speed - 0.5) * 23.6);
+
+  const getSliderStyle = (value: number, min: number, max: number) => {
+    const percentage = ((value - min) / (max - min)) * 100;
+    return {
+      background: `linear-gradient(to right, #007AFF ${percentage}%, rgba(255,255,255,0.15) ${percentage}%)`
+    };
+  };
+
   return (
     <div className="flex flex-col h-full bg-black">
-      {/* 
-         固定导航栏
-         使用内联样式直接设置 safe-area-inset-top，确保 PWA 独立模式下正确显示
-         高度缩小为 h-11 (44px)，刚好满足 iOS 最小触摸目标要求
-      */}
-      <div 
+      <div
         className="fixed top-0 left-0 right-0 z-30 bg-zinc-900/95 backdrop-blur-xl border-b border-zinc-800 shadow-lg"
         style={{ paddingTop: 'max(12px, env(safe-area-inset-top, 12px))' }}
       >
         <div className="h-11 flex items-center justify-between px-2">
-            
-            {/* 取消按钮 */}
-            <button 
-                onClick={onCancel} 
-                className="h-full px-3 flex items-center text-zinc-400 hover:text-white active:opacity-50 transition-all"
-            >
-              <ChevronLeft size={24} />
-              <span className="text-base font-medium">取消</span>
-            </button>
-            
-            {/* 标题 */}
-            <span className="font-semibold text-white text-base absolute left-1/2 -translate-x-1/2 pointer-events-none">
-                {song ? '编辑歌词' : '新歌词'}
-            </span>
-            
-            {/* 保存按钮 */}
-            <button 
-                onClick={handleSave} 
-                className="h-full px-4 text-ios-blue font-bold text-base active:opacity-50 transition-all flex items-center"
-            >
-              保存
-            </button>
+          <button
+            onClick={onCancel}
+            className="h-full px-3 flex items-center text-zinc-400 hover:text-white active:opacity-50 transition-all"
+          >
+            <ChevronLeft size={24} />
+            <span className="text-base font-medium">取消</span>
+          </button>
+          <span className="font-semibold text-white text-base absolute left-1/2 -translate-x-1/2 pointer-events-none">
+            {song ? '编辑歌词' : '新歌词'}
+          </span>
+          <button
+            onClick={handleSave}
+            className="h-full px-4 text-ios-blue font-bold text-base active:opacity-50 transition-all flex items-center"
+          >
+            保存
+          </button>
         </div>
       </div>
 
-      {/* 占位空间，高度与固定导航栏匹配 */}
       <div style={{ paddingTop: 'max(12px, env(safe-area-inset-top, 12px))' }}>
-          <div className="h-11 w-full" />
+        <div className="h-11 w-full" />
       </div>
 
-      {/* 内容区域 */}
       <div className="flex-1 overflow-y-auto p-5 space-y-5 pb-safe-bottom">
         <div className="space-y-3">
           <input
@@ -107,12 +105,40 @@ export default function Editor({ song, onSave, onCancel }: EditorProps) {
           />
         </div>
 
+        {/* 默认滚动速度设置 */}
+        <div className="bg-zinc-900 rounded-2xl p-4">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-zinc-400 text-sm font-medium">默认滚动速度</span>
+            <span className="text-ios-blue text-sm font-bold">{displaySpeed} px/s</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <Turtle size={18} className="text-zinc-500 flex-shrink-0" />
+            <input
+              type="range"
+              min="0.5"
+              max="3"
+              step="0.05"
+              value={speed}
+              onChange={(e) => setSpeed(parseFloat(e.target.value))}
+              style={getSliderStyle(speed, 0.5, 3)}
+              className="flex-1 h-2 rounded-full appearance-none cursor-pointer outline-none
+                          [&::-webkit-slider-thumb]:appearance-none 
+                          [&::-webkit-slider-thumb]:w-6
+                          [&::-webkit-slider-thumb]:h-6
+                          [&::-webkit-slider-thumb]:rounded-full 
+                          [&::-webkit-slider-thumb]:bg-white 
+                          [&::-webkit-slider-thumb]:shadow-lg"
+            />
+            <Rabbit size={18} className="text-zinc-500 flex-shrink-0" />
+          </div>
+        </div>
+
         <div className="relative">
-             <label className="flex items-center justify-center gap-3 w-full py-4 border border-dashed border-zinc-700 rounded-2xl text-zinc-400 hover:text-zinc-200 hover:border-zinc-500 cursor-pointer active:bg-zinc-800 transition-all">
-                <UploadCloud size={22} />
-                <span className="font-medium text-base">导入 .txt 文件</span>
-                <input type="file" accept=".txt" onChange={handleFileUpload} className="hidden" />
-             </label>
+          <label className="flex items-center justify-center gap-3 w-full py-4 border border-dashed border-zinc-700 rounded-2xl text-zinc-400 hover:text-zinc-200 hover:border-zinc-500 cursor-pointer active:bg-zinc-800 transition-all">
+            <UploadCloud size={22} />
+            <span className="font-medium text-base">导入 .txt 文件</span>
+            <input type="file" accept=".txt" onChange={handleFileUpload} className="hidden" />
+          </label>
         </div>
 
         <div className="flex-1">
@@ -124,8 +150,7 @@ export default function Editor({ song, onSave, onCancel }: EditorProps) {
             spellCheck={false}
           />
         </div>
-        
-        {/* 底部留白 */}
+
         <div className="h-20"></div>
       </div>
     </div>
