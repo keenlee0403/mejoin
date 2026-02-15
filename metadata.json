@@ -1,0 +1,5 @@
+{
+  "name": "StageFlow Prompter",
+  "description": "A professional-grade, dark-mode teleprompter designed for musicians. Features adjustable scroll speed, font sizing, and offline storage. Add to Home Screen on iOS for a full-screen app experience.",
+  "requestFramePermissions": []
+}
