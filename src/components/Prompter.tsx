@@ -1,15 +1,18 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Song } from '../types';
-import { Play, Pause, ChevronLeft, Settings2, ChevronDown, Minus, Plus, Turtle, Rabbit, Pencil } from 'lucide-react';
+import { Play, Pause, ChevronLeft, Settings2, ChevronDown, Minus, Plus, Turtle, Rabbit, Pencil, SkipForward } from 'lucide-react';
 
 interface PrompterProps {
   song: Song;
   onBack: () => void;
   onEdit: () => void;
+  nextSong?: Song;
+  onNext?: () => void;
 }
 
-export default function Prompter({ song, onBack, onEdit }: PrompterProps) {
+export default function Prompter({ song, onBack, onEdit, nextSong, onNext }: PrompterProps) {
   // UI 状态
+  const [scrolledToEnd, setScrolledToEnd] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [speed, setSpeed] = useState(song.settings?.speed ?? 1.0);
   const [fontSize, setFontSize] = useState(song.settings?.fontSize || 48);
@@ -55,6 +58,7 @@ export default function Prompter({ song, onBack, onEdit }: PrompterProps) {
       if (scrollTop > 10 && scrollTop + clientHeight >= scrollHeight - 2) {
         isPlayingRef.current = false;
         setIsPlaying(false);
+        setScrolledToEnd(true);
         lastTimeRef.current = 0;
         scrollAccRef.current = 0;
         return;
@@ -132,6 +136,21 @@ export default function Prompter({ song, onBack, onEdit }: PrompterProps) {
           }}
         >
           {song.lyrics || "点击开始滚动..."}
+
+          {/* 下一首按钮 */}
+          {scrolledToEnd && nextSong && onNext && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onNext(); }}
+              className="mt-16 mb-8 flex items-center gap-3 bg-ios-blue/20 border border-ios-blue/40 text-ios-blue px-6 py-4 rounded-2xl active:scale-95 transition-transform"
+              style={{ fontSize: '18px' }}
+            >
+              <SkipForward size={24} />
+              <div className="text-left">
+                <p className="text-xs text-ios-blue/70">下一首</p>
+                <p className="font-bold">{nextSong.title}</p>
+              </div>
+            </button>
+          )}
         </div>
       </div>
 

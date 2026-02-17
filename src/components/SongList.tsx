@@ -1,6 +1,6 @@
 import React from 'react';
 import { Song } from '../types';
-import { Plus, Trash2, ChevronRight, Music, Pencil } from 'lucide-react';
+import { Plus, Trash2, ChevronRight, Music, Pencil, ListMusic } from 'lucide-react';
 
 interface SongListProps {
   songs: Song[];
@@ -8,21 +8,31 @@ interface SongListProps {
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
   onCreate: () => void;
+  onOpenPlaylists: () => void;
 }
 
-export default function SongList({ songs, onSelect, onEdit, onDelete, onCreate }: SongListProps) {
+export default function SongList({ songs, onSelect, onEdit, onDelete, onCreate, onOpenPlaylists }: SongListProps) {
   return (
     <div className="flex flex-col h-full bg-black">
       {/* Header with Safe Area */}
       <div className="bg-black/80 backdrop-blur-xl sticky top-0 z-10 border-b border-zinc-800 pt-safe-top">
         <div className="px-6 h-16 flex justify-between items-center">
           <h1 className="text-3xl font-bold text-white tracking-tight">Mejoin</h1>
-          <button
-            onClick={onCreate}
-            className="bg-white text-black w-10 h-10 flex items-center justify-center rounded-full hover:bg-zinc-200 transition-colors shadow-lg shadow-white/10 active:scale-95 duration-200"
-          >
-            <Plus size={24} />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={onOpenPlaylists}
+              className="bg-zinc-800 text-white h-10 px-4 flex items-center gap-2 rounded-full hover:bg-zinc-700 transition-colors active:scale-95 duration-200 border border-zinc-700"
+            >
+              <ListMusic size={18} />
+              <span className="text-sm font-medium">歌单</span>
+            </button>
+            <button
+              onClick={onCreate}
+              className="bg-white text-black w-10 h-10 flex items-center justify-center rounded-full hover:bg-zinc-200 transition-colors shadow-lg shadow-white/10 active:scale-95 duration-200"
+            >
+              <Plus size={24} />
+            </button>
+          </div>
         </div>
       </div>
 

@@ -10,4 +10,11 @@ export interface Song {
   }
 }
 
-export type ViewState = 'LIST' | 'PROMPTER' | 'EDITOR';
+export interface Playlist {
+  id: string;
+  name: string;
+  songIds: string[];
+  createdAt: number;
+}
+
+export type ViewState = 'LIST' | 'PROMPTER' | 'EDITOR' | 'PLAYLISTS' | 'PLAYLIST_EDIT' | 'PLAYLIST_PLAY';
